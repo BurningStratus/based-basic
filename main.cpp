@@ -1,33 +1,47 @@
 #include <iostream>
-#include <fstream>
-#include <string>
-#include <variant>
 #include <regex>
+#include <string>
+#include <vector>
+#include <iterator>
+
+// #include <fstream>
+// #include <algorithm>
+#include <variant>
 
 
 // separate classes for lexer, file handling, preprocessor
 // TODO: parse out the empty lines and comments
 
+#if 0
 class Interpreter {
 public:
 	Interpreter();
 };
+#endif
 
+#if 0
 class Token {
-protected:
-	std::variant<int, double, std::string> value;
+public:
 	std::string type;
+	std::variant<std::string, double, int> value;
 	unsigned line;
 	unsigned column;
 
-public:
 	Token(std::string type, const std::string& val, unsigned line, unsigned column) :
-		type(type), value(value), line(line), column(column) {};
+		type(type), value(val), line(line), column(column)
+	{};
+
 	Token(std::string type, double val, unsigned line, unsigned column) :
-		type(type), value(value), line(line), column(column) {};
+		type(type), value(val), line(line), column(column)
+	{};
+
 	Token(std::string type, int val, unsigned line, unsigned column) :
-		type(type), value(value), line(line), column(column) {};
+		type(type), value(val), line(line), column(column)
+	{};
+
+
 };
+#endif
 
 class Lexer {
 public:
@@ -39,31 +53,95 @@ public:
 	// column
 	// token_spec = [ () ]
 	//tokens()
-	std::vector<Token> tokenize(const std::string line);
+	//std::vector<std::string> tokenize(const std::string line);
+	std::vector<std::string> tokenize(const std::string line);
 };
 
 //	10 LET D = 10
+
+//std::vector<std::string>
+std::vector<std::string>
 Lexer::tokenize(const std::string line)
 {
-	std::string code; // TODO: was a property of a class
+	// tok_regex = '|'.join('(?P<%s>%s)' % pair for pair in self.token_spec)
+	// ("number_literal",  r'\d+(\.\d*)?'),    # int or float
+	// const std::regex re(R"(\d+(\.\d*)?))");
 
+	const std::regex expr_number{R"(\d+(\.\d*)?)"};
+	const std::regex expr_d{R"([\s|,]+)"};
+	const std::regex expr_D{R"((?P<NUMBER>\d+)(?P<STRING>\w+)"};
+
+	std::vector<std::string> tokenized;
+
+	//std::sregex_token_iterator it{line.begin(),line.end(), expr_number};
+	//std::sregex_token_iterator end;
+	std::cmatch match;
+	std::regex_match(line, match, expr_D);
+
+
+	for (; it != end; ++it)
+	{
+		std::cout << "M >> " << *it << std::endl;
+		tokenized.push_back(*it);
+	}
+	
+
+// 	for (std::sregex_iterator it = line_begin; it != line_end; ++it)
+//	{
+//		std::smatch match = *it;
+//		// -- std::string match_str = match.str()
+//		tokenized.push_back(match.str());
+//	}
+
+	// Additional check to remove empty strings
+	//tokenized.erase( 
+		//std::remove_if(tokenized.begin(), tokenized.end(), line.empty()), tokenized.end());
+
+	return tokenized;
 }
+#if 0
+{
+	std::vector<Token> tokenized;
+	std::basic_stringstream<char> sstream{line};
+
+	int i;
+	double d;
+	std::string s;
+
+	if (sstream >> i)
+	{
+		tokenized.push_back(Token{"NUMBER", i, 0, 0});
+	} else if (sstream >> d) {
+		tokenized.push_back(Token{"DOUBLE", d, 0, 0});
+	} else if (sstream >> s) {
+		tokenized.push_back(Token{"STRING", s, 0, 0});
+	} 
+
+	return tokenized;
+}
+#endif
 
 int main()
 {
-	std::string line ;
-	std::ifstream file("sample.cfg");
-	if (file.is_open())
-	{
-		while (std::getline(file, line))
-			std::cout << line << std::endl;
-		file.close();
-	}
-	else
-	{
-		std::cout << "Unable to open the file! " << std::endl;
-	}
+	std::string line;
+	Lexer lexer;
 
+	std::cout << "<<: ";
+	//while (std::getline(std::cin, line))
+	//{
+	line =
+	"10 GOTO \n"
+	"30 INSERT \n"
+	"50 30 20 \n"
+	;
+		std::vector<std::string> o = lexer.tokenize(line);
+
+		for (auto token : o)
+        		std::cout << ": " << token << std::endl;
+
+		std::cout << "<<: ";
+	//}
+		
 	return 0;
 }
 
@@ -88,7 +166,6 @@ int main()
 // BASE, DATA, DEF, DIM, END, FOR, GO, GOSUB, GOTO, IF, INPUT, LET, NEXT,
 // ON, OPTION, PRINT, RANDOMIZE, READ, REM, RESTORE, RETURN, STEP, STOP,
 // SUB, THEN, TO
-
 //        self.token_spec = [
 //            ("argv_begin",      r'\('),     # start of argument vector
 //            ("argv_end",        r'\)'),     # end of args vector
